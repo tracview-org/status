@@ -1,0 +1,73 @@
+name: Status
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+  issues:
+    types: [opened, edited, closed, reopened, labeled, unlabeled]
+
+permissions:
+  contents: write
+  issues: read
+  pages: write
+  id-token: write
+
+# One run at a time, so data commits never race.
+concurrency:
+  group: status
+  cancel-in-progress: false
+
+jobs:
+  update:
+    if: github.event_name != 'issues' || github.event.label.name == 'incident' || contains(github.event.issue.labels.*.name, 'incident')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Test
+        if: github.event_name == 'push'
+        run: npm test
+
+      - name: Check health
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        env:
+          TRACVIEW_HEALTH_URL: ${{ vars.TRACVIEW_HEALTH_URL }}
+        run: node scripts/check.mjs
+
+      - name: Commit history
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        run: |
+          git add data
+          git diff --cached --quiet && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "Record health check"
+          git push
+
+      - name: Build page
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/build.mjs
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: update
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
