@@ -1,11 +1,14 @@
 {
-  "checkedAt": "2026-11-16T04:27:06.991Z",
+  "checkedAt": "2026-11-16T04:32:34.073Z",
   "components": {
     "app": "operational",
     "signIn": "operational",
     "integrationsSync.salesforce": "operational",
     "integrationsSync.hubspot": "operational",
     "integrationsSync.zendesk": "operational",
+    "integrationsSync.gong": "operational",
+    "integrationsSync.jira": "operational",
+    "mailCollection": "down",
     "emailSending": "operational",
     "eventsApi": "operational",
     "publicApi": "operational"
