@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-11-16T04:27:06.991Z",
+  "components": {
+    "app": "operational",
+    "signIn": "operational",
+    "integrationsSync.salesforce": "operational",
+    "integrationsSync.hubspot": "operational",
+    "integrationsSync.zendesk": "operational",
+    "emailSending": "operational",
+    "eventsApi": "operational",
+    "publicApi": "operational"
+  }
+}
