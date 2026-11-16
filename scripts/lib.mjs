@@ -5,12 +5,61 @@ export const COMPONENTS = [
   { key: "integrationsSync.salesforce", label: "Salesforce sync" },
   { key: "integrationsSync.hubspot", label: "HubSpot sync" },
   { key: "integrationsSync.zendesk", label: "Zendesk sync" },
+  { key: "integrationsSync.gong", label: "Gong sync" },
+  { key: "integrationsSync.jira", label: "Jira sync" },
+  { key: "mailCollection", label: "Mail collection" },
   { key: "emailSending", label: "Email sending" },
   { key: "eventsApi", label: "Events API" },
   { key: "publicApi", label: "Public API" },
 ];
 
 export const STATES = ["operational", "degraded", "down"];
+
+const worse = (a, b) => (STATES.indexOf(a) >= STATES.indexOf(b) ? a : b);
+
+/**
+ * Unauthenticated calls the API components must refuse with a 401
+ * (tracview-org/tracview#2484). Anything else, a timeout included, is down.
+ */
+const PROBES = [
+  { key: "eventsApi", method: "POST", path: "/api/v1/events" },
+  { key: "publicApi", method: "GET", path: "/api/v1/customers" },
+];
+
+export const probeRequests = (healthUrl) =>
+  PROBES.map(({ key, method, path }) => ({ key, method, url: new URL(path, healthUrl).href }));
+
+/** A probe's state from its HTTP status; `null` is a timeout or network error. */
+export const probeState = (status) => (status === 401 ? "operational" : "down");
+
+/** Each probed component shows the worse of `/api/health`'s value and its probe. */
+export function withProbes(states, probes) {
+  const merged = { ...states };
+  for (const [key, state] of Object.entries(probes)) merged[key] = worse(merged[key] ?? "operational", state);
+  return merged;
+}
+
+/** Hidden marker on incidents the checker opened, so it only closes its own. */
+export const incidentMarker = (key) => `<!-- status-check:${key} -->`;
+
+/**
+ * Incidents to open and close (tracview-org/tracview#2485): open when a
+ * component reads `down` on two checks in a row and has no auto incident open;
+ * close an auto incident once its component is no longer `down`. Incidents
+ * opened by hand are never touched.
+ */
+export function incidentPlan({ previous, current, open }) {
+  const auto = new Map();
+  for (const issue of open)
+    for (const { key } of COMPONENTS) if (issue.body?.includes(incidentMarker(key))) auto.set(key, issue.number);
+  const plan = { open: [], close: [] };
+  for (const { key } of COMPONENTS) {
+    if (current[key] === "down") {
+      if (previous?.[key] === "down" && !auto.has(key)) plan.open.push(key);
+    } else if (auto.has(key)) plan.close.push(auto.get(key));
+  }
+  return plan;
+}
 
 /** Days of history kept and shown. */
 export const HISTORY_DAYS = 90;

@@ -1,7 +1,20 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { COMPONENTS, dayState, lastDates, monthDates, normalize, record, uptime } from "../scripts/lib.mjs";
+import {
+  COMPONENTS,
+  dayState,
+  incidentMarker,
+  incidentPlan,
+  lastDates,
+  monthDates,
+  normalize,
+  probeRequests,
+  probeState,
+  record,
+  uptime,
+  withProbes,
+} from "../scripts/lib.mjs";
 
 const healthy = {
   status: "ok",
@@ -58,4 +71,54 @@ test("dayState is the worst state seen that day", () => {
 test("date windows", () => {
   assert.deepEqual(lastDates("2026-03-01", 3), ["2026-02-27", "2026-02-28", "2026-03-01"]);
   assert.deepEqual(monthDates("2026-11-03"), ["2026-11-01", "2026-11-02", "2026-11-03"]);
+});
+
+test("components include Gong, Jira and mail collection", () => {
+  const keys = COMPONENTS.map((c) => c.key);
+  for (const k of ["integrationsSync.gong", "integrationsSync.jira", "mailCollection"]) assert.ok(keys.includes(k), k);
+  const states = normalize({
+    components: { ...healthy.components, integrationsSync: { ...healthy.components.integrationsSync, gong: "degraded", jira: "operational" }, mailCollection: "down" },
+  });
+  assert.equal(states["integrationsSync.gong"], "degraded");
+  assert.equal(states.mailCollection, "down");
+});
+
+test("a probe is operational only on a 401", () => {
+  assert.equal(probeState(401), "operational");
+  for (const s of [200, 403, 429, 500, 503, null]) assert.equal(probeState(s), "down", String(s));
+});
+
+test("probes target the health URL's origin without a key", () => {
+  assert.deepEqual(
+    probeRequests("https://www.tracview.io/api/health").map((p) => [p.key, p.method, p.url]),
+    [
+      ["eventsApi", "POST", "https://www.tracview.io/api/v1/events"],
+      ["publicApi", "GET", "https://www.tracview.io/api/v1/customers"],
+    ],
+  );
+});
+
+test("withProbes shows the worse of the health component and its probe", () => {
+  const states = normalize(healthy);
+  const merged = withProbes(states, { eventsApi: "down", publicApi: "operational" });
+  assert.equal(merged.eventsApi, "down");
+  assert.equal(merged.publicApi, "operational");
+  assert.equal(withProbes({ ...states, publicApi: "degraded" }, { publicApi: "operational" }).publicApi, "degraded");
+  assert.equal(states.eventsApi, "operational", "input untouched");
+});
+
+const auto = (key, number) => ({ number, body: `${incidentMarker(key)}\nfounder text` });
+
+test("an incident opens after two down checks in a row, once", () => {
+  const prev = { app: "down", signIn: "operational" };
+  const now = { app: "down", signIn: "down" };
+  assert.deepEqual(incidentPlan({ previous: prev, current: now, open: [] }), { open: ["app"], close: [] });
+  assert.deepEqual(incidentPlan({ previous: prev, current: now, open: [auto("app", 7)] }), { open: [], close: [] });
+  assert.deepEqual(incidentPlan({ previous: null, current: now, open: [] }), { open: [], close: [] });
+});
+
+test("an auto-opened incident closes on recovery; hand-opened ones stay", () => {
+  const open = [auto("app", 7), { number: 8, body: "Degraded sync, opened by hand" }];
+  assert.deepEqual(incidentPlan({ previous: { app: "down" }, current: { app: "degraded" }, open }), { open: [], close: [7] });
+  assert.deepEqual(incidentPlan({ previous: { app: "down" }, current: { app: "down" }, open }), { open: [], close: [] });
 });

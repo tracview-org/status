@@ -15,6 +15,8 @@ const month = monthDates(today);
 
 const escape = (s) =>
   String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+/** An incident body without the checker's hidden marker. */
+const publicText = (body) => (body ?? "").replace(/<!-- status-check:[^>]*-->\n?/g, "").trim();
 const percent = (p) => (p === null ? "–" : `${p.toFixed(p === 100 ? 0 : 2)}%`);
 const LABEL = { operational: "Operational", degraded: "Degraded", down: "Down" };
 
@@ -46,7 +48,7 @@ const rows = COMPONENTS.map(({ key, label }, i) => {
 const incidentList = incidents.length
   ? `<section class="incidents"><h2>Open incidents</h2>${incidents
       .map(
-        (i) => `<article><h3><a href="${escape(i.html_url)}">${escape(i.title)}</a></h3><p class="meta">Opened ${escape(i.created_at.slice(0, 16).replace("T", " "))} UTC</p>${i.body ? `<p>${escape(i.body).replace(/\n/g, "<br>")}</p>` : ""}</article>`,
+        (i) => `<article><h3><a href="${escape(i.html_url)}">${escape(i.title)}</a></h3><p class="meta">Opened ${escape(i.created_at.slice(0, 16).replace("T", " "))} UTC</p>${publicText(i.body) ? `<p>${escape(publicText(i.body)).replace(/\n/g, "<br>")}</p>` : ""}</article>`,
       )
       .join("")}</section>`
   : "";

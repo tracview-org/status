@@ -11,7 +11,7 @@ on:
 
 permissions:
   contents: write
-  issues: read
+  issues: write
   pages: write
   id-token: write
 
@@ -41,6 +41,7 @@ jobs:
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         env:
           TRACVIEW_HEALTH_URL: ${{ vars.TRACVIEW_HEALTH_URL }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/check.mjs
 
       - name: Commit history
