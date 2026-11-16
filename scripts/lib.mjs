@@ -7,9 +7,7 @@ export const COMPONENTS = [
   { key: "integrationsSync.zendesk", label: "Zendesk sync" },
   { key: "integrationsSync.gong", label: "Gong sync" },
   { key: "integrationsSync.jira", label: "Jira sync" },
-  // Hidden until tracview-org/tracview's mailbox freshness fix is on production:
-  // /api/health reads every Mailbox stale 2 h after its backfill. Still recorded.
-  { key: "mailCollection", label: "Mail collection", hidden: true },
+  { key: "mailCollection", label: "Mail collection" },
   { key: "emailSending", label: "Email sending" },
   { key: "eventsApi", label: "Events API" },
   { key: "publicApi", label: "Public API" },
