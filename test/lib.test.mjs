@@ -122,3 +122,9 @@ test("an auto-opened incident closes on recovery; hand-opened ones stay", () => 
   assert.deepEqual(incidentPlan({ previous: { app: "down" }, current: { app: "degraded" }, open }), { open: [], close: [7] });
   assert.deepEqual(incidentPlan({ previous: { app: "down" }, current: { app: "down" }, open }), { open: [], close: [] });
 });
+
+test("a hidden component never opens an incident", () => {
+  assert.ok(COMPONENTS.find((c) => c.key === "mailCollection").hidden);
+  const plan = incidentPlan({ previous: { mailCollection: "down" }, current: { mailCollection: "down" }, open: [] });
+  assert.deepEqual(plan, { open: [], close: [] });
+});

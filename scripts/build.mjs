@@ -1,7 +1,10 @@
 // Renders site/index.html from data/ and the repo's open `incident` issues.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 
-import { COMPONENTS, HISTORY_DAYS, TARGET, dayState, lastDates, monthDates, uptime } from "./lib.mjs";
+import { COMPONENTS as ALL_COMPONENTS, HISTORY_DAYS, TARGET, dayState, lastDates, monthDates, uptime } from "./lib.mjs";
+
+/** Components shown on the page; a hidden one is still recorded. */
+const COMPONENTS = ALL_COMPONENTS.filter((c) => !c.hidden);
 
 const readJson = async (path, fallback) => JSON.parse(await readFile(path, "utf8").catch(() => JSON.stringify(fallback)));
 

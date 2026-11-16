@@ -7,7 +7,9 @@ export const COMPONENTS = [
   { key: "integrationsSync.zendesk", label: "Zendesk sync" },
   { key: "integrationsSync.gong", label: "Gong sync" },
   { key: "integrationsSync.jira", label: "Jira sync" },
-  { key: "mailCollection", label: "Mail collection" },
+  // Hidden until tracview-org/tracview's mailbox freshness fix is on production:
+  // /api/health reads every Mailbox stale 2 h after its backfill. Still recorded.
+  { key: "mailCollection", label: "Mail collection", hidden: true },
   { key: "emailSending", label: "Email sending" },
   { key: "eventsApi", label: "Events API" },
   { key: "publicApi", label: "Public API" },
@@ -53,7 +55,8 @@ export function incidentPlan({ previous, current, open }) {
   for (const issue of open)
     for (const { key } of COMPONENTS) if (issue.body?.includes(incidentMarker(key))) auto.set(key, issue.number);
   const plan = { open: [], close: [] };
-  for (const { key } of COMPONENTS) {
+  for (const { key, hidden } of COMPONENTS) {
+    if (hidden) continue;
     if (current[key] === "down") {
       if (previous?.[key] === "down" && !auto.has(key)) plan.open.push(key);
     } else if (auto.has(key)) plan.close.push(auto.get(key));
