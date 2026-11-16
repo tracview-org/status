@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-16T23:09:45.858Z",
+  "checkedAt": "2026-11-16T23:52:34.983Z",
   "components": {
     "app": "operational",
     "signIn": "operational",
@@ -8,7 +8,7 @@
     "integrationsSync.zendesk": "operational",
     "integrationsSync.gong": "operational",
     "integrationsSync.jira": "operational",
-    "mailCollection": "down",
+    "mailCollection": "operational",
     "emailSending": "operational",
     "eventsApi": "operational",
     "publicApi": "operational"
