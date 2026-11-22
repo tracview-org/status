@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-22T16:10:25.374Z",
+  "checkedAt": "2026-11-22T21:45:21.149Z",
   "components": {
     "app": "operational",
     "signIn": "operational",
@@ -11,6 +11,6 @@
     "mailCollection": "operational",
     "emailSending": "operational",
     "eventsApi": "operational",
-    "publicApi": "operational"
+    "publicApi": "down"
   }
 }
