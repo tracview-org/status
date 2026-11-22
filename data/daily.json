@@ -340,5 +340,62 @@
    "degraded": 0,
    "down": 0
   }
+ },
+ "2026-11-22": {
+  "app": {
+   "operational": 1,
+   "degraded": 0,
+   "down": 0
+  },
+  "signIn": {
+   "operational": 1,
+   "degraded": 0,
+   "down": 0
+  },
+  "integrationsSync.salesforce": {
+   "operational": 1,
+   "degraded": 0,
+   "down": 0
+  },
+  "integrationsSync.hubspot": {
+   "operational": 1,
+   "degraded": 0,
+   "down": 0
+  },
+  "integrationsSync.zendesk": {
+   "operational": 1,
+   "degraded": 0,
+   "down": 0
+  },
+  "integrationsSync.gong": {
+   "operational": 1,
+   "degraded": 0,
+   "down": 0
+  },
+  "integrationsSync.jira": {
+   "operational": 1,
+   "degraded": 0,
+   "down": 0
+  },
+  "mailCollection": {
+   "operational": 1,
+   "degraded": 0,
+   "down": 0
+  },
+  "emailSending": {
+   "operational": 1,
+   "degraded": 0,
+   "down": 0
+  },
+  "eventsApi": {
+   "operational": 1,
+   "degraded": 0,
+   "down": 0
+  },
+  "publicApi": {
+   "operational": 1,
+   "degraded": 0,
+   "down": 0
+  }
  }
 }
